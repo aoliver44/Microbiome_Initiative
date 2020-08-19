@@ -82,7 +82,7 @@ pigz -p 8 *.fastq
 
 cp OTU_table.csv ../../../OTU_table.csv
 cp Species_taxa.csv ../../../Species_taxa.csv
-
+cp Dada2_stats_full.csv ../../../Dada2_stats_full.csv
  
 # If you want to use the silva classifier:
 # taxa <- dada2::assignTaxonomy(seqtab.nochim, '~/tax/silva_nr_v128_train_set.fa.gz', multithread=TRUE);
