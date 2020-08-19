@@ -5,7 +5,7 @@
 library(tidyverse)
 library(EcolUtils)
 library(zoo)
-setwd("~/path/to/files/")
+setwd("~/Downloads/Dada-test/")
 
 # Import OTU file and rarefy...loading RDS object bc this part take like 10 min
 # and im impatient
@@ -22,7 +22,6 @@ taxa <- read.csv("Species_taxa.csv", check.names = FALSE, sep = ",")
 taxa <- data.frame(lapply(taxa, function(x) {gsub("\\[.*?\\]", "", x)}))
 
 # what this next part does is attempt to bring the last known phylgenetic group to unknown sections
-#taxa <- taxa %>% separate(., col = Taxon, into = c("L1","L2","L3","L4","L5","L6","L7"), sep = "; ", remove = T, extra = "drop")
 taxa <- data.frame(lapply(taxa, function(x) {gsub("[a-z]__", "", x)}))
 taxa <- taxa %>% mutate_all(na_if,"")
 taxa <- data.frame(t(apply(taxa,1,function(x) na.locf(x))))
@@ -45,12 +44,11 @@ sort(rowSums(qiime_clean))
 
 # rarefy to 2000 sequences
 set.seed(seed = 999)
-rare_perm_otu <- rrarefy.perm(qiime_clean, sample = 2000, n = 15, round.out = T)
-alpha_rare <- rare_perm_otu[rowSums(rare_perm_otu) >= 2000-(2000*.1), colSums(rare_perm_otu) >= 1]
+rare_perm_otu <- rrarefy.perm(qiime_clean, sample = 10, n = 15, round.out = T)
+alpha_rare <- rare_perm_otu[rowSums(rare_perm_otu) >= 10-(10*.1), colSums(rare_perm_otu) >= 1]
 barplot(sort(rowSums(alpha_rare)), ylim = c(0, max(rowSums(rare_perm_otu))), 
         xlim = c(0,NROW(rare_perm_otu)), col = "Blue", main = "Reads after rarefaction")
 sort(rowSums(alpha_rare))
-
 
 # merge OTU with taxa and metadata
 otu_merged <- merge(metadata, as.data.frame(alpha_rare), by.x = "sample_id", by.y = "row.names", all.x = F) 
