@@ -1,14 +1,28 @@
 #!/bin/bash
-#$ -N Denoise
-#$ -q bio,abio*,pub*,free*
-#$ -pe openmp 8
-#$ -R y
-#$ -m beas
-#$ -cwd
-#$ -ckpt restart
+
+#--------------------------SBATCH settings------
+
+#SBATCH --job-name=Amp_2      ## job name
+#SBATCH -A katrine_lab     ## account to charge
+#SBATCH -p standard          ## partition/queue name
+#SBATCH --nodes=1            ## (-N) number of nodes to use
+#SBATCH --ntasks=1           ## (-n) number of tasks to launch
+#SBATCH --cpus-per-task=8    ## number of cores the job needs
+##SBATCH --mail-user=aoliver2@uci.edu ## your email address
+##SBATCH --mail-type=begin,end,fail ##type of emails to receive
+#SBATCH --error=slurm-%J.err ## error log file
+#SBATCH --output=slurm-%J.out ##output info file
+
+#--- If there is a doube hash (##) before SBATCH then it is deactivated---
+
+##SBATCH --requeue
+#Specifies that the job will be requeued after a node failure.
+#The default is that the job will not be requeued.
+
+#========Begin commands for job======
 
 cd demultiplexed_seqs/*/data
-module load R/3.5.1
+module load R/3.6.2
 
 echo "
 library(dada2);
@@ -68,8 +82,8 @@ rownames(track) <- sample.names
 write.csv(track, file = 'Dada2_stats_full.csv');
 
 # Assign taxonomy
-taxa <- dada2::assignTaxonomy(seqtab.nochim, '/dfs5/bio/whitesonlab/rdp_database/rdp_train_set_16.fa.gz', multithread=TRUE, minBoot = 60);
-taxa <- addSpecies(taxa, '/dfs5/bio/whitesonlab/rdp_database/rdp_species_assignment_16.fa.gz')
+taxa <- dada2::assignTaxonomy(seqtab.nochim, '/dfs3b/whitesonlab/rdp_database/rdp_train_set_16.fa.gz', multithread=TRUE, minBoot = 60);
+taxa <- addSpecies(taxa, '/dfs3b/whitesonlab/rdp_database/rdp_species_assignment_16.fa.gz')
 saveRDS(taxa, file = 'taxa.rds')
 write.csv(seqtab.nochim, 'OTU_table.csv');
 write.csv(taxa, 'Species_taxa.csv');
@@ -77,13 +91,12 @@ write.csv(taxa, 'Species_taxa.csv');
 dev.off();
  " | R --vanilla --no-save
 
-module load pigz
-pigz -p 8 *.fastq
+gzip *.fastq
 
 cp OTU_table.csv ../../../OTU_table.csv
 cp Species_taxa.csv ../../../Species_taxa.csv
 cp Dada2_stats_full.csv ../../../Dada2_stats_full.csv
- 
+
 # If you want to use the silva classifier:
 # taxa <- dada2::assignTaxonomy(seqtab.nochim, '~/tax/silva_nr_v128_train_set.fa.gz', multithread=TRUE);
 # taxa <- dada2::addSpecies(taxa, '~/tax/silva_species_assignment_v128.fa.gz');

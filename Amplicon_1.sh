@@ -1,15 +1,29 @@
 #!/bin/bash
-#$ -N import_qc
-#$ -q bio,abio*,pub*,free*
-#$ -pe openmp 4
-#$ -R y
-#$ -m beas
-#$ -cwd
-#$ -ckpt restart
 
+#--------------------------SBATCH settings------
 
-module load anaconda/2.7-4.3.1
-source activate qiime2-2018.4
+#SBATCH --job-name=Amp_1      ## job name
+#SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
+#SBATCH -p standard          ## partition/queue name
+#SBATCH --nodes=1            ## (-N) number of nodes to use
+#SBATCH --ntasks=1           ## (-n) number of tasks to launch
+#SBATCH --cpus-per-task=2    ## number of cores the job needs
+##SBATCH --mail-user=MYEMAIL@uci.edu ## your email address
+##SBATCH --mail-type=begin,end,fail ##type of emails to receive
+#SBATCH --error=slurm-%J.err ## error log file
+#SBATCH --output=slurm-%J.out ##output info file
+
+#--- If there is a doube hash (##) before SBATCH then it is deactivated---
+
+##SBATCH --requeue
+#Specifies that the job will be requeued after a node failure.
+#The default is that the job will not be requeued.
+
+#========Begin commands for job======
+
+module load qiime2/2020.8
+source activate qiime2-2020.8
+
 
 qiime tools import \
    --type EMPPairedEndSequences \
@@ -20,7 +34,9 @@ qiime demux emp-paired \
   --m-barcodes-file metadata.tsv \
   --m-barcodes-column BarcodeSequence \
   --i-seqs imported_data.qza \
-  --o-per-sample-sequences demux.qza
+  --p-no-golay-error-correction \
+  --o-per-sample-sequences demux.qza \
+  --o-error-correction-details correction_details.qza
 
 qiime demux summarize \
   --i-data demux.qza \
@@ -32,17 +48,16 @@ qiime demux summarize \
 
 unzip demux.qza -d demultiplexed_seqs
 cd demultiplexed_seqs/*/data
-module load pigz
-pigz -d -p 4 *.fastq.gz
+gunzip *.fastq.gz
 
 #Clean as you go:
 #rm ../../imported_data.qza
 #rm ../../demux.qza
 #rm ../../demux.qzv
 
-source deactivate qiime2-2018.4
+conda deactivate
 module purge
-module load R/3.5.1
+module load R/3.6.2
 
 echo "
 library(dada2);
@@ -63,6 +78,10 @@ ggsave('QC-Forward.pdf', plot = QC_forward);
 ggsave('QC-Reverse.pdf', plot = QC_reverse);
 dev.off();
 " | R --no-save --vanilla
+
+cp QC-Forward.pdf ../../../
+cp QC-Reverse.pdf ../../../
+
 # Setting up the HPC to run Dada2 through R is a little tricky. If i never used R 3.5 before,
 # i had to fake install something like ggplot. i.e. install.packages('ggplot2'). This
 # then asked for a CRAN mirror (i just picked the US (138 i think?)) and then it asked
