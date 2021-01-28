@@ -3,12 +3,12 @@
 #--------------------------SBATCH settings------
 
 #SBATCH --job-name=Amp_2      ## job name
-#SBATCH -A katrine_lab     ## account to charge
+#SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
 #SBATCH -p standard          ## partition/queue name
 #SBATCH --nodes=1            ## (-N) number of nodes to use
 #SBATCH --ntasks=1           ## (-n) number of tasks to launch
 #SBATCH --cpus-per-task=8    ## number of cores the job needs
-##SBATCH --mail-user=aoliver2@uci.edu ## your email address
+##SBATCH --mail-user=MYEMAIL@uci.edu ## your email address
 ##SBATCH --mail-type=begin,end,fail ##type of emails to receive
 #SBATCH --error=slurm-%J.err ## error log file
 #SBATCH --output=slurm-%J.out ##output info file
