@@ -34,9 +34,10 @@ qiime demux emp-paired \
   --m-barcodes-file metadata.tsv \
   --m-barcodes-column BarcodeSequence \
   --i-seqs imported_data.qza \
-  --p-no-golay-error-correction \
   --o-per-sample-sequences demux.qza \
-  --o-error-correction-details correction_details.qza
+  --o-error-correction-details correction_details.qza \
+  --p-rev-comp-barcodes \
+  --p-rev-comp-mapping-barcodes
 
 qiime demux summarize \
   --i-data demux.qza \

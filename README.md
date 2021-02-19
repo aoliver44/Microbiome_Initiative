@@ -1,14 +1,12 @@
 ## Paired-End DADA2 Amplicon Analysis Pipeline
-This pipeline is just one of a billion that is pretty good at analyzing 16SrRNA amplicons. I think its strength is that it is pretty clear what is going on under the hood (except demultiplexing...which i still use Qiime2 for). **It will run on the HPC2 cluster, and with some modifications should run on HPC3 just fine**
-
+This pipeline is just one of a billion that is pretty good at analyzing 16SrRNA amplicons. I think its strength is that it is pretty clear what is going on under the hood (except demultiplexing...which i still use Qiime2 for). **It will run on the HPC3 cluster**
 ### Dependencies
-* anaconda/2.7-4.3.1
+* anaconda
 * qiime2-2018.4
 * R/3.5.1
     * library(dada2) (i run dada2_1.11.1)
         * You may have to install this, just like in RStudio
     * library(utils)
-* pigz/2.3.1
 
 
 ### Step 1: Import and demultiplex
