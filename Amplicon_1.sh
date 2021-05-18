@@ -3,11 +3,11 @@
 #--------------------------SBATCH settings------
 
 #SBATCH --job-name=Amp_1      ## job name
-#SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
-#SBATCH -p standard          ## partition/queue name
+##SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
+#SBATCH -p free          ## partition/queue name
 #SBATCH --nodes=1            ## (-N) number of nodes to use
 #SBATCH --ntasks=1           ## (-n) number of tasks to launch
-#SBATCH --cpus-per-task=2    ## number of cores the job needs
+#SBATCH --cpus-per-task=6    ## number of cores the job needs
 ##SBATCH --mail-user=MYEMAIL@uci.edu ## your email address
 ##SBATCH --mail-type=begin,end,fail ##type of emails to receive
 #SBATCH --error=slurm-%J.err ## error log file
@@ -83,10 +83,10 @@ dev.off();
 cp QC-Forward.pdf ../../../
 cp QC-Reverse.pdf ../../../
 
-# Setting up the HPC to run Dada2 through R is a little tricky. If i never used R 3.5 before,
+# Setting up the HPC to run Dada2 through R is a little tricky. If i never used R 3.6.2 before,
 # i had to fake install something like ggplot. i.e. install.packages('ggplot2'). This
 # then asked for a CRAN mirror (i just picked the US (138 i think?)) and then it asked
-# me if i wanted to install a personal 3.5 library. THIS IS VITAL. You hit yes. And i think
+# me if i wanted to install a personal 3.6.2 library. THIS IS VITAL. You hit yes. And i think
 # yes again. Then you can install Dada2. Devtools is already installed.
 
 # Install Dada2

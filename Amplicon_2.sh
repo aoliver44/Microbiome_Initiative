@@ -3,11 +3,11 @@
 #--------------------------SBATCH settings------
 
 #SBATCH --job-name=Amp_2      ## job name
-#SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
-#SBATCH -p standard          ## partition/queue name
+##SBATCH -A YOUR_LAB_ACCOUNT     ## account to charge
+#SBATCH -p free          ## partition/queue name
 #SBATCH --nodes=1            ## (-N) number of nodes to use
 #SBATCH --ntasks=1           ## (-n) number of tasks to launch
-#SBATCH --cpus-per-task=8    ## number of cores the job needs
+#SBATCH --cpus-per-task=16    ## number of cores the job needs
 ##SBATCH --mail-user=MYEMAIL@uci.edu ## your email address
 ##SBATCH --mail-type=begin,end,fail ##type of emails to receive
 #SBATCH --error=slurm-%J.err ## error log file
@@ -39,15 +39,15 @@ sample.names <- sapply(strsplit(basename(fnFs), '_'), getElement, 1);
 filtFs <- file.path(path, 'filtered', paste0(sample.names, '_F_filt.fastq.gz'));
 filtRs <- file.path(path, 'filtered', paste0(sample.names, '_R_filt.fastq.gz'));
 
-# filtering
-out <- dada2::filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(280,260), trimLeft=5, trimRight=5, rm.phix=TRUE, compress=TRUE, multithread=8);
+# filtering, good idea to choose your values from Figaro!
+out <- dada2::filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(296,167), maxEE=c(2,5), trimLeft=5, trimRight=5, rm.phix=TRUE, compress=TRUE, multithread=16);
 saveRDS(out, file = 'out.rds')
 write.csv(out, file = 'Filter-Trim.stats.csv')
 
 # predicting error rate for the reads
-errF <- dada2::learnErrors(filtFs, multithread=8, randomize=TRUE);
+errF <- dada2::learnErrors(filtFs, multithread=16, randomize=TRUE);
 saveRDS(errF, file = 'errF.rds')
-errR <- dada2::learnErrors(filtRs, multithread=8, randomize=TRUE);
+errR <- dada2::learnErrors(filtRs, multithread=16, randomize=TRUE);
 saveRDS(errR, file = 'errR.rds')
 Error_plot_F <- dada2::plotErrors(errF, nominalQ=TRUE);
 Error_plot_R <- dada2::plotErrors(errR, nominalQ=TRUE);
@@ -63,16 +63,16 @@ saveRDS(derepRs, file = 'derepRs.rds')
 names(derepFs) <- sample.names
 names(derepRs) <- sample.names
 
-dadaFs <- dada2::dada(derepFs, err=errF, multithread=8, pool='pseudo');
+dadaFs <- dada2::dada(derepFs, err=errF, multithread=16, pool='pseudo');
 saveRDS(dadaFs, file = 'dadaFs.rds')
-dadaRs <- dada2::dada(derepRs, err=errR, multithread=8, pool='pseudo');
+dadaRs <- dada2::dada(derepRs, err=errR, multithread=16, pool='pseudo');
 saveRDS(dadaRs, file = 'dadaRs.rds')
 
 mergers <- dada2::mergePairs(dadaFs, derepFs, dadaRs, derepRs, verbose=FALSE);
 saveRDS(mergers, file = 'mergers.rds')
 seqtab <- dada2::makeSequenceTable(mergers);
 
-seqtab.nochim <- dada2::removeBimeraDenovo(seqtab, method='consensus', multithread=8, verbose=TRUE);
+seqtab.nochim <- dada2::removeBimeraDenovo(seqtab, method='consensus', multithread=16, verbose=TRUE);
 saveRDS(seqtab.nochim, file = 'seqtab_nochim.rds')
 
 getN <- function(x) sum(getUniques(x));
@@ -82,7 +82,7 @@ rownames(track) <- sample.names
 write.csv(track, file = 'Dada2_stats_full.csv');
 
 # Assign taxonomy
-taxa <- dada2::assignTaxonomy(seqtab.nochim, '/dfs3b/whitesonlab/rdp_database/rdp_train_set_16.fa.gz', multithread=TRUE, minBoot = 60);
+taxa <- dada2::assignTaxonomy(seqtab.nochim, '/dfs3b/whitesonlab/rdp_database/rdp_train_set_16.fa.gz', multithread=TRUE, minBoot = 70);
 taxa <- addSpecies(taxa, '/dfs3b/whitesonlab/rdp_database/rdp_species_assignment_16.fa.gz')
 saveRDS(taxa, file = 'taxa.rds')
 write.csv(seqtab.nochim, 'OTU_table.csv');
